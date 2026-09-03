@@ -1,0 +1,28 @@
+<Page x:Class="LocalGameManager.Views.SettingsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Background="{DynamicResource PageBackgroundBrush}" Loaded="Page_Loaded">
+  <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="32" MaxWidth="920">
+    <TextBlock Text="设置" FontSize="28" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+    <TextBlock x:Name="StatusText" Text="设置保存在程序目录的 Data\settings.json。" Margin="0,6,0,24" Foreground="{DynamicResource TextSecondaryBrush}"/>
+    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16"><StackPanel>
+      <TextBlock Text="翻译中转器" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+      <TextBlock Text="仅在勾选“启动翻译中转器”的游戏启动时使用；程序只会关闭自己启动的那一份。" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,5,0,12" TextWrapping="Wrap"/>
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="RelayPathBox" Grid.Column="0" ToolTip="CMD 或 EXE 路径"/><Button Grid.Column="1" Content="选择…" Click="ChooseRelay_Click" Margin="8,2,0,2"/></Grid>
+      <TextBlock Text="健康检查地址" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="HealthUrlBox"/>
+      <TextBlock Text="启动等待秒数" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="StartupTimeoutBox" Width="100" HorizontalAlignment="Left"/>
+      <TextBlock Text="信息自动更新最短间隔（天）" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBlock Text="批量自动更新会跳过在此间隔内已自动更新过的游戏；单游戏更新不受此限制。" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4" TextWrapping="Wrap"/><TextBox x:Name="MetadataUpdateIntervalDaysBox" Width="100" HorizontalAlignment="Left"/>
+      <TextBlock Text="MTOOL 启动脚本文件名" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="MToolLauncherFileNameBox" ToolTip="默认：与工具一同启动.bat"/>
+    </StackPanel></Border>
+    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16"><StackPanel>
+      <TextBlock Text="AI 搜索" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+      <TextBlock Text="在游戏库搜索栏以 @ 开头输入自然语言请求，按 Enter 使用 AI 解析为本地筛选条件。API Key 仅从指定的系统环境变量读取，不会保存到此文件。" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,5,0,12" TextWrapping="Wrap"/>
+      <TextBlock Text="模型" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="AiModelBox"/>
+      <TextBlock Text="API Key 环境变量名" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="AiApiKeyEnvironmentVariableBox" ToolTip="默认：DEEPSEEK_API_KEY"/>
+      <TextBlock Text="API 地址" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="AiBaseUrlBox" ToolTip="默认：https://api.deepseek.com"/>
+    </StackPanel></Border>
+    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20"><StackPanel>
+      <TextBlock Text="已使用的扫描根目录" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+      <TextBlock Text="通过“扫描文件夹”使用过的目录会自动记录在这里，方便确认资料来源。" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,5,0,12"/>
+      <ListBox x:Name="ScanRootsList" Height="130"/>
+      <Button Content="保存设置" Click="Save_Click" HorizontalAlignment="Left" Margin="0,18,0,0" Background="#5267D5" Foreground="White" BorderBrush="Transparent"/>
+    </StackPanel></Border>
+  </StackPanel></ScrollViewer>
+</Page>

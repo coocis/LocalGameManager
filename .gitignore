@@ -1,0 +1,21 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+.vs/
+
+# Local application data and releases
+Data/
+Release/
+*.db
+*.db-shm
+*.db-wal
+
+# Python cache and temporary diagnostics
+__pycache__/
+*.py[cod]
+temp-*/
+LocalGameManager.Cli/Verification/FakeGame/
+
+# User-specific files
+*.user
+*.suo
