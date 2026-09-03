@@ -23,7 +23,7 @@
 | `LocalGameManager` | WPF GUI 项目 |
 | `LocalGameManager.Cli` | 面向自动化的 CLI 项目 |
 | `LocalGameManager.MetadataFetcher` | Python 3.12 DLsite 元数据抓取器 |
-| `Scripts` | 标签导入等辅助脚本 |
+| `LocalGameManager/InitialData` | 仅包含预置标签的初始 SQLite 数据库 |
 
 ## 环境要求
 
@@ -45,7 +45,7 @@ dotnet publish .\LocalGameManager\LocalGameManager.csproj -c Release -o .\Releas
 dotnet publish .\LocalGameManager.Cli\LocalGameManager.Cli.csproj -c Release -o .\Release
 ```
 
-首次运行时，程序会在可执行文件旁创建 `Data` 目录，保存 SQLite 数据库与配置。该目录包含个人资料，不应提交到版本控制。
+首次运行时，程序会在可执行文件旁创建 `Data` 目录，并将随程序提供的初始数据库复制为 `Data/library.db`。初始数据库仅含标准标签，不含任何游戏、图片、商店收藏、路径或个人配置。之后的个人资料均保存在 `Data` 中，不应提交到版本控制。
 
 ## AI 搜索配置
 

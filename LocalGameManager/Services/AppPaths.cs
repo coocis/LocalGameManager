@@ -20,6 +20,11 @@ public sealed class AppPaths
     public void EnsureDirectories()
     {
         Directory.CreateDirectory(DataDirectory);
+        if (!File.Exists(DatabasePath))
+        {
+            var initialDatabase = Path.Combine(RootDirectory, "InitialData", "library.db");
+            if (File.Exists(initialDatabase)) File.Copy(initialDatabase, DatabasePath);
+        }
         Directory.CreateDirectory(BackupDirectory);
     }
 }

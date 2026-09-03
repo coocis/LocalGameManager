@@ -9,6 +9,7 @@ Release/
 *.db
 *.db-shm
 *.db-wal
+!LocalGameManager/InitialData/library.db
 
 # Python cache and temporary diagnostics
 __pycache__/
