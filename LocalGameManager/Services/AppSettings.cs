@@ -38,7 +38,7 @@ public sealed class TranslationRelaySettings
 
 public sealed class AiSettings
 {
-    public string Model { get; set; } = "deepseek-v4-flash";
+    public string Model { get; set; } = "deepseek-flash";
     public string ApiKeyEnvironmentVariable { get; set; } = "DEEPSEEK_API_KEY";
     public string BaseUrl { get; set; } = "https://api.deepseek.com";
 }
