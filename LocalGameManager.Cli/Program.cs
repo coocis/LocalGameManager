@@ -95,7 +95,6 @@ async Task ImportFoldersAsync(string inputPath)
 }
 async Task ImportFolderPathsAsync(IEnumerable<string> folders, string operation, bool continueOnError)
 {
-    BackupDatabase(paths);
     await using var db = new LibraryDbContext(paths);
     await using var transaction = await db.Database.BeginTransactionAsync();
     var discovery = new GameDiscoveryService(); var added = 0; var skipped = 0; var errors = new List<string>();
@@ -113,27 +112,27 @@ async Task ImportFolderPathsAsync(IEnumerable<string> folders, string operation,
     }
     if (errors.Count > 0 && !continueOnError) { await transaction.RollbackAsync(); Write(new { ok = false, operation, rolledBack = true, added = 0, skipped, errors }); Environment.ExitCode = 1; return; }
     await db.SaveChangesAsync(); await transaction.CommitAsync();
-    Write(new { ok = errors.Count == 0, operation, dryRun = false, backupCreated = true, added, skipped, errorCount = errors.Count, errors });
+    Write(new { ok = errors.Count == 0, operation, dryRun = false, added, skipped, errorCount = errors.Count, errors });
 }
 async Task ImportTagsAsync(string inputPath)
 {
     var records = JsonSerializer.Deserialize<List<TagInput>>(File.ReadAllText(inputPath), output) ?? [];
     if (!apply) { Write(new { ok = true, dryRun = true, operation = "tags-import", candidateCount = records.Count, tags = records }); return; }
-    BackupDatabase(paths); await using var db = new LibraryDbContext(paths); await using var tx = await db.Database.BeginTransactionAsync(); var added = 0; var skipped = 0;
+    await using var db = new LibraryDbContext(paths); await using var tx = await db.Database.BeginTransactionAsync(); var added = 0; var skipped = 0;
     foreach (var record in records)
     {
         if (!Enum.TryParse<TagType>(record.Type, true, out var type) || string.IsNullOrWhiteSpace(record.Name)) throw new ArgumentException($"无效标签：{record.Name} / {record.Type}");
         if (await db.Tags.AnyAsync(x => x.Type == type && x.Name == record.Name.Trim())) { skipped++; continue; }
         db.Tags.Add(new Tag { Name = record.Name.Trim(), Type = type }); added++;
     }
-    await db.SaveChangesAsync(); await tx.CommitAsync(); Write(new { ok = true, operation = "tags-import", dryRun = false, backupCreated = true, added, skipped });
+    await db.SaveChangesAsync(); await tx.CommitAsync(); Write(new { ok = true, operation = "tags-import", dryRun = false, added, skipped });
 }
 async Task BulkUpdateAsync(string inputPath)
 {
     using var doc = JsonDocument.Parse(File.ReadAllText(inputPath));
     var records = doc.RootElement.ValueKind == JsonValueKind.Array ? doc.RootElement.EnumerateArray().ToArray() : doc.RootElement.GetProperty("games").EnumerateArray().ToArray();
     if (!apply) { Write(new { ok = true, dryRun = true, operation = "bulk-update", candidateCount = records.Length, ids = records.Select(x => x.GetProperty("id").GetInt64()).ToArray() }); return; }
-    BackupDatabase(paths); await using var db = new LibraryDbContext(paths); await using var tx = await db.Database.BeginTransactionAsync(); var updated = 0;
+    await using var db = new LibraryDbContext(paths); await using var tx = await db.Database.BeginTransactionAsync(); var updated = 0;
     foreach (var record in records)
     {
         var id = record.GetProperty("id").GetInt64(); var game = await db.Games.Include(x => x.GameTags).Include(x => x.Dlcs).Include(x => x.Media).FirstOrDefaultAsync(x => x.Id == id) ?? throw new ArgumentException($"找不到游戏 ID {id}。");
@@ -148,7 +147,7 @@ async Task BulkUpdateAsync(string inputPath)
         game.MetadataUpdatedAtUtc = DateTime.UtcNow;
         updated++;
     }
-    await db.SaveChangesAsync(); await tx.CommitAsync(); Write(new { ok = true, operation = "bulk-update", dryRun = false, backupCreated = true, updated });
+    await db.SaveChangesAsync(); await tx.CommitAsync(); Write(new { ok = true, operation = "bulk-update", dryRun = false, updated });
 }
 void SetString(JsonElement element, string property, Action<string?> assign) { if (element.TryGetProperty(property, out var value)) assign(value.ValueKind == JsonValueKind.Null ? null : value.GetString()); }
 void SetInt(JsonElement element, string property, Action<int> assign) { if (element.TryGetProperty(property, out var value)) assign(value.GetInt32()); }
@@ -186,5 +185,4 @@ string RequiredOperand(string error) => arguments.Skip(1).FirstOrDefault(value =
 void Help() => Write(new { ok = true, commands = new[] { "verify [--app-root PATH]", "export [--app-root PATH]", "metadata-index [--app-root PATH]", "tags-index [--app-root PATH]", "scan ROOT [--apply] [--continue-on-error]", "import-folders FILE.json [--apply] [--continue-on-error]", "tags-import FILE.json [--apply]", "bulk-update FILE.json [--apply]" }, notes = new[] { "所有输出均为 JSON。", "metadata-index 输出 AI 查询与更新所需的定位信息和媒体状态。", "tags-index 输出全部可用标签。", "bulk-update 支持 coverPath 与 screenshotPaths，路径必须指向本地图片。", "写入命令默认仅预演；--apply 才写入。", "写入前自动备份 Data\\library.db；默认任一错误整体回滚。" } });
 void Write(object value) => Console.WriteLine(JsonSerializer.Serialize(value, output));
 string? ReadOption(IReadOnlyList<string> values, string option) { for (var index = 0; index < values.Count - 1; index++) if (string.Equals(values[index], option, StringComparison.OrdinalIgnoreCase)) return values[index + 1]; return null; }
-void BackupDatabase(AppPaths appPaths) { appPaths.EnsureDirectories(); if (File.Exists(appPaths.DatabasePath)) File.Copy(appPaths.DatabasePath, Path.Combine(appPaths.BackupDirectory, $"library-{DateTime.UtcNow:yyyyMMddHHmmssfff}.db")); }
 sealed record TagInput(string Name, string Type);
