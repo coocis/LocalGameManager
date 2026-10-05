@@ -19,7 +19,8 @@ public sealed class GameLaunchService(AppPaths paths)
         var game = await db.Games.FirstOrDefaultAsync(item => item.Id == gameId, cancellationToken) ?? throw new InvalidOperationException("找不到游戏。");
         if (string.IsNullOrWhiteSpace(game.ExecutablePath) || !File.Exists(game.ExecutablePath)) throw new FileNotFoundException("游戏可执行文件不存在。", game.ExecutablePath);
 
-        var relayLease = game.StartTranslationRelay && await AcquireRelayLeaseAsync(relaySettings, cancellationToken);
+        var lease = game.StartTranslationRelay ? await TryAcquireTranslationRelayAsync(relaySettings, cancellationToken) : new TranslationRelayLease(false, false);
+        var relayLease = lease.HasLease;
         try
         {
             Process startedProcess;
@@ -76,6 +77,11 @@ public sealed class GameLaunchService(AppPaths paths)
 
     private static async Task<bool> AcquireRelayLeaseAsync(TranslationRelaySettings settings, CancellationToken cancellationToken)
     {
+        if (settings.IsRemote)
+        {
+            if (!await IsRelayHealthyAsync(settings.HealthUrl, cancellationToken)) throw new InvalidOperationException("远程中转器不可用。");
+            return false;
+        }
         await RelayGate.WaitAsync(cancellationToken);
         try
         {
@@ -137,7 +143,7 @@ public sealed class GameLaunchService(AppPaths paths)
         return false;
     }
 
-    private static async Task<bool> IsRelayHealthyAsync(string url, CancellationToken cancellationToken)
+    public static async Task<bool> IsRelayHealthyAsync(string url, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(url)) return false;
         try { return (await HttpClient.GetAsync(url, cancellationToken)).StatusCode == HttpStatusCode.OK; }

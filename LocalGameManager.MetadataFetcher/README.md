@@ -28,3 +28,9 @@ py -3.12 .\dlsite_metadata_fetcher.py --app-root ..\Release --id 6 --lookup-orig
 ~~~
 
 下载和 JSON 默认保存在 Release\Data\metadata-fetch。CLI 成功写入后会将图片作为 BLOB 保存至数据库。
+
+## 中转器设置
+
+抓取器读取 `Data/settings.json` 的 `translationRelay.serviceUrl` 和 `translationRelay.accessKey`，使用 `/translate/密钥` 请求翻译；兼容旧的 `healthUrl` 设置。服务既可以在本机，也可以在远程 HTTP 服务器上。
+
+通过 GUI 更新本地游戏资料时，管理器会在本地模式下按需启动中转器，在远程模式下检查服务器可用性；不可用时跳过翻译并保留原文。直接运行 Python 脚本时不会自动启动本地服务，应提前启动。请求翻译失败时脚本仍会尝试 Google Translate，最终失败则保留原文。

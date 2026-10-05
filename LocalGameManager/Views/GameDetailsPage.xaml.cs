@@ -17,6 +17,21 @@ public partial class GameDetailsPage : Page
     private readonly long _gameId;
     private readonly ObservableCollection<TagSelectionItem> _tagItems = [];
     private int _rating;
+    private async void ConfigureXUnity_Click(object sender, RoutedEventArgs e)
+    {
+        var button = (Button)sender;
+        button.IsEnabled = false;
+        try
+        {
+            await using var db = new LibraryDbContext(App.Paths);
+            var game = await db.Games.AsNoTracking().FirstOrDefaultAsync(game => game.Id == _gameId);
+            if (game is null) throw new InvalidOperationException("找不到此游戏。");
+            await new XUnityConfigurationService().ConfigureAsync(game.GamePath, ExecutablePathBox.Text.Trim(), App.Settings.TranslationRelay);
+            StatusText.Text = "XUnity 配置已更新。";
+        }
+        catch (Exception exception) { MessageBox.Show(exception.Message, "配置 XUnity", MessageBoxButton.OK, MessageBoxImage.Warning); }
+        finally { button.IsEnabled = true; }
+    }
     public GameDetailsPage(long gameId) { _gameId = gameId; InitializeComponent(); }
     private async void Page_Loaded(object sender, RoutedEventArgs e) => await LoadAsync();
     private async Task LoadAsync()

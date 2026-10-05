@@ -4,10 +4,21 @@
     <TextBlock x:Name="StatusText" Text="设置保存在程序目录的 Data\settings.json。" Margin="0,6,0,24" Foreground="{DynamicResource TextSecondaryBrush}"/>
     <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16"><StackPanel>
       <TextBlock Text="翻译中转器" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
-      <TextBlock Text="仅在勾选“启动翻译中转器”的游戏启动时使用；程序只会关闭自己启动的那一份。" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,5,0,12" TextWrapping="Wrap"/>
+      <TextBlock Text="本地模式按需启动中转器；远程模式直接使用服务器，不管理服务器进程。" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,5,0,12" TextWrapping="Wrap"/>
+      <ComboBox x:Name="RelayModeBox" SelectionChanged="RelayMode_Changed" Foreground="{DynamicResource TextPrimaryBrush}" Background="{DynamicResource InputBackgroundBrush}">
+        <ComboBox.Template><ControlTemplate TargetType="ComboBox"><Grid>
+          <ToggleButton IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" Focusable="False"><ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="8,6"><Grid><TextBlock Text="▼" HorizontalAlignment="Right" Foreground="{DynamicResource TextPrimaryBrush}"/></Grid></Border></ControlTemplate></ToggleButton.Template></ToggleButton>
+          <ContentPresenter Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" Margin="8,6,30,6" IsHitTestVisible="False" VerticalAlignment="Center"/>
+          <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True" Focusable="False"><Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"><StackPanel IsItemsHost="True"/></Border></Popup>
+        </Grid></ControlTemplate></ComboBox.Template>
+        <ComboBoxItem Content="本地"/><ComboBoxItem Content="远程"/>
+      </ComboBox>
+      <StackPanel x:Name="LocalRelayPanel">
       <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="RelayPathBox" Grid.Column="0" ToolTip="CMD 或 EXE 路径"/><Button Grid.Column="1" Content="选择…" Click="ChooseRelay_Click" Margin="8,2,0,2"/></Grid>
-      <TextBlock Text="健康检查地址" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="HealthUrlBox"/>
       <TextBlock Text="启动等待秒数" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="StartupTimeoutBox" Width="100" HorizontalAlignment="Left"/>
+      </StackPanel>
+      <TextBlock Text="服务地址" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="HealthUrlBox" ToolTip="例如 http://47.120.58.106:8765"/><Button Content="测试连接" Click="TestRelay_Click"/>
+      <TextBlock Text="翻译中转器访问密钥" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="RelayAccessKeyBox" ToolTip="填写 access_key.txt 中的 64 位十六进制密钥"/>
       <TextBlock Text="信息自动更新最短间隔（天）" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBlock Text="批量自动更新会跳过在此间隔内已自动更新过的游戏；单游戏更新不受此限制。" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4" TextWrapping="Wrap"/><TextBox x:Name="MetadataUpdateIntervalDaysBox" Width="100" HorizontalAlignment="Left"/>
       <TextBlock Text="MTOOL 启动脚本文件名" Margin="0,12,0,2" Foreground="{DynamicResource TextSecondaryBrush}"/><TextBox x:Name="MToolLauncherFileNameBox" ToolTip="默认：与工具一同启动.bat"/>
     </StackPanel></Border>

@@ -31,8 +31,14 @@ public sealed class LibrarySettings
 
 public sealed class TranslationRelaySettings
 {
+    public string AccessKey { get; set; } = string.Empty;
     public string Path { get; set; } = string.Empty;
-    public string HealthUrl { get; set; } = "http://127.0.0.1:8765/health";
+    public string Mode { get; set; } = "Local";
+    public string ServiceUrl { get; set; } = "http://127.0.0.1:8765";
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool IsRemote => Mode == "Remote";
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string HealthUrl => ServiceUrl.TrimEnd('/') + "/health";
     public int StartupTimeoutSeconds { get; set; } = 15;
 }
 

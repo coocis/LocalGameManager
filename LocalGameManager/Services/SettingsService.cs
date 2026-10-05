@@ -18,7 +18,12 @@ public sealed class SettingsService(AppPaths paths)
 
         try
         {
-            return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(paths.SettingsPath), SerializerOptions) ?? new AppSettings();
+            var text = File.ReadAllText(paths.SettingsPath);
+            var settings = JsonSerializer.Deserialize<AppSettings>(text, SerializerOptions) ?? new AppSettings();
+            using var document = JsonDocument.Parse(text);
+            if (document.RootElement.TryGetProperty("translationRelay", out var relay) && !relay.TryGetProperty("serviceUrl", out _) && relay.TryGetProperty("healthUrl", out var oldUrl))
+                settings.TranslationRelay.ServiceUrl = System.Text.RegularExpressions.Regex.Replace(oldUrl.GetString() ?? settings.TranslationRelay.HealthUrl, @"/health/?$", "");
+            return settings;
         }
         catch (JsonException)
         {

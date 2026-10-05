@@ -220,13 +220,18 @@ def relay_endpoint(app_root: Path) -> str | None:
     settings_path = app_root / "Data" / "settings.json"
     try:
         settings = json.loads(settings_path.read_text(encoding="utf-8"))
-        health_url = str(settings.get("translationRelay", {}).get("healthUrl", "")).strip()
+        relay_settings = settings.get("translationRelay", {})
+        service_url = str(relay_settings.get("serviceUrl", "")).strip().rstrip("/")
+        health_url = service_url + "/health" if service_url else str(relay_settings.get("healthUrl", "")).strip()
         if not health_url:
             return None
         parsed = urllib.parse.urlparse(health_url)
         if not parsed.scheme or not parsed.netloc:
             return None
         path = re.sub(r"/health/?$", "/translate", parsed.path or "/health")
+        access_key = str(settings.get("translationRelay", {}).get("accessKey", "")).strip()
+        if access_key:
+            path = path.rstrip("/") + "/" + urllib.parse.quote(access_key, safe="")
         return urllib.parse.urlunparse(parsed._replace(path=path, query=""))
     except (OSError, ValueError, TypeError):
         return None
